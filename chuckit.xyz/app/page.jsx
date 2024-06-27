@@ -1,28 +1,20 @@
-import Image from "next/image";
 import UpvotePanel from "@/components/UpvotePanel";
 
 export default function Home() {
   return (
     <main
       id="home-main"
-      className="flex min-h-screen w-screen flex-col items-center justify-between p-8"
+      className="flex min-h-screen w-screen flex-col items-center justify-between p-4"
     >
       <nav className="flex flex-row w-full h-max p-4 justify-between items-center self-start">
         <div className="flex flex-row items-center gap-4">
-          <Image
-            src="/logo.png"
-            alt="Chuckit"
-            width={36}
-            height={36}
-            className="h-full rounded-lg"
-          />
-          <h1 className="text-2xl font-bold text-blue-400">chuckit.xyz</h1>
+          <h1 className="text-xl font-bold text-blue-400">chuckit.xyz</h1>
         </div>
         <a
-          href="/demo"
-          className="text-2xl font-bold text-white bg-blue-500 px-2 p-1"
+          href="/roadmap"
+          className="text-xl font-bold text-white bg-blue-500 px-1"
         >
-          try v0.1.0
+          roadmap
         </a>
       </nav>
       <section className="flex flex-col items-center text-center gap-16">
@@ -31,7 +23,7 @@ export default function Home() {
         </h2>
         <a
           href="/demo"
-          className="text-2xl font-bold text-white bg-blue-400 px-2 p-1 hover:bg-blue-500"
+          className="text-2xl font-bold text-white bg-blue-500 px-2 p-1 hover:bg-blue-600"
         >
           try v0.1.0 now
         </a>

@@ -3,21 +3,47 @@ import { NextResponse } from "next/server";
 
 export async function GET(req, res) {
     try {
-        const upvotes = await client.get("upvotes");
+        const url = new URL(req.url.slice())
+        const key = url.searchParams.get("key");
+        if (!key) {
+            return NextResponse.json({ message: "No key provided." }, { status: 400 });
+        }
+        const upvotes = await client.get(key);
         return NextResponse.json({ upvotes }, { status: 200 });
     } catch (error) {
-        console.error("GET /upvotes error");
-        return NextResponse.error({ status: 500 });
+        console.error("GET /upvotes error", error);
+        return NextResponse.json({ message: "Internal server error." }, { status: 500 });
     }
 }
 
 export async function POST(req, res) {
     try {
-        await client.incr("upvotes");
-        const upvotes = await client.get("upvotes");
+        const url = new URL(req.url.slice())
+        const key = url.searchParams.get("key");
+        if (!key) {
+            return NextResponse.json({ message: "No key provided." }, { status: 400 });
+        }
+        await client.incr(key);
+        const upvotes = await client.get(key);
         return NextResponse.json({ upvotes }, { status: 200 });
     } catch (error) {
-        console.error('POST /upvotes error');
-        return NextResponse.error({ status: 500 });
+        console.error('POST /upvotes error', error);
+        return NextResponse.json({ message: "Internal server error." }, { status: 500 });
+    }
+}
+
+export async function PUT(req, res) {
+    try {
+        const url = new URL(req.url.slice())
+        const key = url.searchParams.get("key");
+        if (!key) {
+            return NextResponse.json({ message: "No key provided." }, { status: 400 });
+        }
+        const { upvotes } = await req.json();
+        await client.set(key, upvotes);
+        return NextResponse.json({ status: 200 });
+    } catch (error) {
+        console.error('POST /upvotes error', error);
+        return NextResponse.json({ message: "Internal server error." }, { status: 500 });
     }
 }
