@@ -5,6 +5,7 @@ const KEY = "upvotes";
 
 export default function UpvotePanel() {
   const [upvotes, setUpvotes] = useState(0);
+  const [voted, setVoted] = useState(0);
 
   useEffect(() => {
     const fetchUpvotes = async () => {
@@ -16,7 +17,20 @@ export default function UpvotePanel() {
     fetchUpvotes();
   }, []);
 
+  useEffect(() => {
+    if (!window) return;
+    const voted = localStorage?.getItem(KEY) || 0;
+    setVoted(voted);
+  }, []);
+
   const handleUpvote = async () => {
+    if (voted) {
+      alert("You have already upvoted this idea");
+      return;
+    } else {
+      setVoted(true);
+      localStorage?.setItem(KEY, 1);
+    }
     const res = await fetch(`/api/public/upvote?key=${KEY}`, {
       method: "POST",
     });

@@ -4,15 +4,16 @@ import React, { useEffect, useState } from "react";
 const KEY = "features";
 
 const FEATURES = {
-  "customize links": 9,
-  "preview files": 2,
-  "nearby sharing": 15,
-  "share folders": 5,
-  "passcode protection": 2,
+  "customize links": 0,
+  "preview files": 0,
+  "nearby sharing": 0,
+  "share folders": 0,
+  "passcode protection": 0,
 };
 
 const RoadmapPage = () => {
   const [features, setFeatures] = useState(FEATURES);
+  const [voted, setVoted] = useState(0);
 
   const fetchUpvotes = async () => {
     try {
@@ -29,8 +30,20 @@ const RoadmapPage = () => {
     fetchUpvotes();
   }, []);
 
+  useEffect(() => {
+    if (!window) return;
+    const voted = localStorage?.getItem(KEY) || 0;
+    setVoted(voted);
+  });
+
   const updateVotes = async (upvotes) => {
     try {
+      if (voted >= 3) {
+        alert("3 votes max!");
+        return;
+      }
+      setVoted(voted + 1);
+      localStorage?.setItem(KEY, parseInt(voted) + 1);
       const res = await fetch(`/api/public/upvote?key=${KEY}`, {
         method: "PUT",
         body: JSON.stringify({ upvotes: JSON.stringify(upvotes) }),
@@ -63,7 +76,7 @@ const RoadmapPage = () => {
     <main className="container mx-auto lg:w-2/3 p-4 flex flex-col justify-center gap-8">
       <div>
         <h1 className="text-2xl font-bold mb-2 mt-4">Feature Roadmap</h1>
-        <p className="text-base mb-4">upvote features you want most</p>
+        <p className="text-base mb-4">upvote upto 3 features you want most</p>
       </div>
       <ul className="space-y-8 text-lg">
         {Object.keys(FEATURES).map((feature, index) => (
