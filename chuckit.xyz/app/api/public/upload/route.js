@@ -1,6 +1,9 @@
 import { bucket } from "@/utilities/connectToGCS";
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+const stream = require("stream");
+
+const UPLOAD_LIMIT = 20 * 1024 * 1024; // 20MB
 
 export async function POST(req, res) {
     try {
@@ -10,7 +13,7 @@ export async function POST(req, res) {
         if (!file) {
             return NextResponse.json({ message: "No file uploaded." }, { status: 400 });
         }
-        if (file.size > (10 * 1024 * 1024)) {
+        if (file.size > UPLOAD_LIMIT) {
             return NextResponse.json({ message: "File size over limit." }, { status: 400 });
         }
 
