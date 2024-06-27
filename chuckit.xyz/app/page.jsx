@@ -18,7 +18,10 @@ export default function Home() {
           />
           <h1 className="text-2xl font-bold text-blue-400">chuckit.xyz</h1>
         </div>
-        <a href="/demo" className="text-2xl font-bold text-blue-400">
+        <a
+          href="/demo"
+          className="text-2xl font-bold text-white bg-blue-500 px-2 p-1"
+        >
           try v0.1.0
         </a>
       </nav>
@@ -26,6 +29,12 @@ export default function Home() {
         <h2 className="text-4xl font-bold text-blue-400">
           chuck files across devices and continents!
         </h2>
+        <a
+          href="/demo"
+          className="text-2xl font-bold text-white bg-blue-400 px-2 p-1 hover:bg-blue-500"
+        >
+          try v0.1.0 now
+        </a>
         <UpvotePanel />
       </section>
       <section className="flex flex-row items-center text-base text-gray-400">

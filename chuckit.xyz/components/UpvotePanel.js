@@ -24,8 +24,8 @@ export default function UpvotePanel() {
 
     return (
         <div className="flex flex-col justify-center items-center text-center gap-4">
-            <button onClick={handleUpvote} className="text-xl animate-pulse font-bold bg-blue-400 text-white p-2 px-3 rounded-md">🔼 upvote</button>
-            <h2 className="text-2xl font-bold text-blue-400">{upvotes || 'many'} others liked this idea</h2>
+            <button onClick={handleUpvote} className="text-base animate-pulse font-bold bg-blue-500 text-white p-1 rounded-md">🔼 upvote</button>
+            <h2 className="text-xl font-bold text-blue-400">{upvotes || 'many'} others liked this idea</h2>
         </div>
     )
 }

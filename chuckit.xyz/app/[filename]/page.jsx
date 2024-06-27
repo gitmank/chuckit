@@ -12,7 +12,6 @@ const FilePage = () => {
   const { filename } = useParams();
   const [fileLink, setFileLink] = useState(null);
   const [status, setStatus] = useState(STATUS_ENUM.LOADING);
-  const [file, setFile] = useState(null);
   let originalName;
 
   useEffect(() => {
@@ -24,8 +23,7 @@ const FilePage = () => {
           originalName = res.headers
             .get("Content-Disposition")
             .split("=")
-            .pop()
-            .replace(/"/g, "");
+            .pop();
           return res.blob();
         } else {
           throw new Error("File download error");
@@ -74,19 +72,18 @@ const FilePage = () => {
       <p className="text-4xl">💚 &lt;- - - - 📁</p>
       <h1 className="text-xl">download started</h1>
       <div className="text-center">
-        <p className="text-sm">Your download should complete soon,</p>
+        <p className="text-sm">Your download should complete soon.</p>
         <p className="text-sm">
-          but here's a&nbsp;
+          Here's a&nbsp;
           <a
             href={fileLink}
             title={originalName}
-            download={originalName || `chuckit-${filename}`}
             target="_blank"
             className="underline"
           >
-            direct link
+            recovery link
           </a>
-          &nbsp;just in case.
+          &nbsp;for emergencies.
         </p>
       </div>
     </main>
