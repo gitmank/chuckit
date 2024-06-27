@@ -49,6 +49,6 @@ export async function POST(req, res) {
         return NextResponse.json({ message: "File uploaded.", link: `${process.env.NEXT_PUBLIC_SITE_URL}/${newFileName}` }, { status: 200 });
     } catch (error) {
         console.error("POST /upload error", error);
-        return NextResponse.json({ status: 500 });
+        return NextResponse.error({ status: 500 });
     }
 }

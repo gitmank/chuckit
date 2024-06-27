@@ -4,8 +4,11 @@ import { bucket } from "@/utilities/connectToGCS";
 export async function GET(req, res) {
     try {
         // get file name from request
-        const url = req.url.slice();
-        const fileName = url.split("?").pop().split("&").pop().split("=").pop()
+        const url = new URL(req.url.slice())
+        const fileName = url.searchParams.get("file");
+        if (!fileName) {
+            return NextResponse.json({ message: "No file name provided." }, { status: 400 });
+        }
         if (!fileName) {
             return NextResponse.json({ message: "No file name provided." }, { status: 400 });
         }
@@ -30,7 +33,7 @@ export async function GET(req, res) {
             },
         });
     } catch (error) {
-        console.error("GET /download error", error);
+        console.error("GET /download error");
         return NextResponse.json({ status: 500 });
     }
 }
