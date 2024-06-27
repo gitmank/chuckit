@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { bucket } from "@/utilities/connectToGCS";
 
 export async function GET(req, res) {
@@ -17,14 +17,16 @@ export async function GET(req, res) {
         }
 
         // download file
-        const fileBuffer = await bucket.file(fileName).download();
+        const [fileBuffer] = await bucket.file(fileName).download({
+            validation: "md5",
+        });
 
         // send file as response
         return new NextResponse(fileBuffer, {
             headers: {
-                "Content-Type": metadata.metadata?.contentType || 'text/plain',
-                "Content-Disposition": `attachment; filename="${metadata.metadata?.originalName || `chuckit-${fileName}`}"`,
-                "X-public-url": metadata.metadata?.public_url || null,
+                "Content-Type": metadata.metadata.contentType,
+                "Content-Disposition": `attachment; filename=${metadata.metadata?.originalName || `chuckit-${fileName}`}`,
+                "X-public-url": metadata.metadata?.public_url || "",
             },
         });
     } catch (error) {

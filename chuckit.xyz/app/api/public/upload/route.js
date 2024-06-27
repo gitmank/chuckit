@@ -18,7 +18,7 @@ export async function POST(req, res) {
         const uuid = uuidv4();
         const newFileName = `${uuid.substring(0, 3)}-${uuid.substring(3, 6)}`;
         // clean file name
-        const originalName = file.name.replace(/[^a-z0-9.]/gi, "_");
+        const originalName = file.name.replace(/[^a-zA-Z0-9.]/gi, "_");
 
         // upload file to GCS
         const fileBuffer = Buffer.from(await file.arrayBuffer());
