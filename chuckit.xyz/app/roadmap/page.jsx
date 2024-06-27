@@ -4,12 +4,11 @@ import React, { useEffect, useState } from "react";
 const KEY = "features";
 
 const FEATURES = {
-  "click to upload": 0,
-  "customize links": 0,
-  "preview files": 0,
-  "nearby sharing": 0,
-  "share folders": 0,
-  "passcode protection": 0,
+  "customize links": 9,
+  "preview files": 2,
+  "nearby sharing": 15,
+  "share folders": 5,
+  "passcode protection": 2,
 };
 
 const RoadmapPage = () => {

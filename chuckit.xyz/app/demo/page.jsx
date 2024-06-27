@@ -73,12 +73,13 @@ const FileUploadPage = () => {
   const handleDrop = async (e) => {
     e.preventDefault();
     setDragging(false);
-    const files = e.dataTransfer.files;
-    if (files.length !== 1) {
+    let files = e.dataTransfer?.files || e.target?.files;
+    if (!files || files.length !== 1) {
       alert("upload a single file");
       return;
     }
     setUploadedFile(files[0]);
+    setFileLink(null);
 
     // upload file
     const formData = new FormData();
@@ -119,25 +120,30 @@ const FileUploadPage = () => {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="bg-gray-950 h-screen flex flex-col items-center justify-center text-white p-8 gap-8 duration-100"
+      className="bg-gray-950 h-screen flex flex-col items-center justify-center text-white p-4 gap-8 duration-100"
     >
       <div
         className={
           dragging
-            ? "flex flex-col p-8 bg-blue-500 animate-pulse text-black rounded-lg shadow-lg text-center w-full md:w-1/2 h-1/2 justify-around duration-100"
-            : "flex flex-col p-8 bg-white text-black rounded-lg shadow-lg text-center w-full md:w-1/2 h-1/2 justify-around duration-100"
+            ? "flex flex-col p-2 bg-blue-500 animate-pulse text-black rounded-lg shadow-lg text-center w-full md:w-1/2 h-3/5 justify-around duration-100"
+            : "flex flex-col p-2 bg-white text-black rounded-lg shadow-lg text-center w-full md:w-2/3 lg:w-1/2 h-3/5 justify-around duration-100"
         }
       >
-        <div className="flex flex-col text-center items-center justify-center w-full h-max">
-          <div>
-            <h2 className="text-2xl font-bold mb-4">Drag and Drop Files</h2>
-            <input className="" type="file" />
-          </div>
-        </div>
+        <h2 className="text-xl font-bold">Drag and Drop Files</h2>
+        <input
+          onChange={handleDrop}
+          className="block w-10/12 max-w-[400px] self-center text-sm p-1 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+          id="file_input"
+          type="file"
+        />
         {uploadedFile ? (
-          <div className="flex flex-col text-center justify-around w-full h-full items-center p-4 gap-4">
-            <div className="flex flex-col items-center justify-center gap-4 w-full h-full">
-              <p>{uploadedFile.name}</p>
+          <div className="flex flex-col text-center justify-around w-full items-center p-4 gap-4">
+            <div className="flex flex-col items-center justify-center gap-4 w-full">
+              <p>
+                {uploadedFile.name.length > 20
+                  ? `${uploadedFile.name.slice(0, 20)}...`
+                  : uploadedFile.name}
+              </p>
               <p className="text-6xl">
                 {FILE_ICONS[uploadedFile?.type] || "📁"}
               </p>
@@ -159,9 +165,9 @@ const FileUploadPage = () => {
             {fileLink ? (
               <p
                 onClick={handleCopyLink}
-                className="bg-gray-600 text-sm lg:text-base font-mono text-white p-2 px-4 rounded-md shadow-blue-500 shadow-lg duration-100 hover:scale-105 active:scale-95"
+                className="bg-gray-600 text-sm lg:text-base font-mono text-white p-1 w-max px-1 rounded-md shadow-blue-500 shadow-lg duration-100 hover:scale-105 active:scale-95"
               >
-                {copied ? "✅ " : "📋 "} {fileLink}
+                {copied ? "✅ " : "📋 "} {fileLink.split("://")[1]}
               </p>
             ) : (
               <button
