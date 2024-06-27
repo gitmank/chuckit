@@ -1,8 +1,6 @@
 import { bucket } from "@/utilities/connectToGCS";
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-const stream = require("stream");
-const stream = require("stream");
 
 const UPLOAD_LIMIT = 20 * 1024 * 1024; // 20MB
 
@@ -26,35 +24,28 @@ export async function POST(req, res) {
 
         // upload file to GCS
         const fileBuffer = Buffer.from(await file.arrayBuffer());
-        const fileObject = bucket.file(newFileName);
+        await bucket.file(newFileName).save(fileBuffer, {
+            metadata: {
+                cacheControl: "private",
+                metadata: {
+                    extension: file.name.split(".").pop(),
+                    originalName: originalName,
+                    contentType: file.type,
+                },
+            },
+        });
 
-        const bufferStream = new stream.PassThrough();
-        bufferStream.write(fileBuffer);
-        bufferStream.end();
+        // create pre-signed URL
+        const [url] = await bucket.file(newFileName).getSignedUrl({
+            action: "read",
+            expires: Date.now() + 7 * 24 * 60 * 60 * 1000,
+        });
 
-        const uploadFile = async () => {
-            return new Promise((resolve, reject) => {
-                bufferStream.pipe(fileObject.createWriteStream({
-                    metadata: {
-                        cacheControl: "private",
-                        metadata: {
-                            extension: file.name.split(".").pop(),
-                            originalName: originalName,
-                            contentType: file.type,
-                        },
-                    },
-                }).on("finish", () => {
-                    console.log("File uploaded.");
-                    resolve();
-                }));
-            });
-        }
-
-        await uploadFile().then(() => {
-            console.log("File uploaded.");
-        }).catch((error) => {
-            console.error("File upload error", error);
-            return NextResponse.error({ status: 500 });
+        // save url to metadata
+        await bucket.file(newFileName).setMetadata({
+            metadata: {
+                public_url: url,
+            },
         });
 
         return NextResponse.json({ message: "File uploaded.", link: `${process.env.NEXT_PUBLIC_SITE_URL}/${newFileName}` }, { status: 200 });
