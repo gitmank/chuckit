@@ -131,7 +131,7 @@ const FileUploadPage = () => {
         <div className="flex flex-col text-center items-center justify-center w-full h-max">
           <div>
             <h2 className="text-2xl font-bold mb-4">Drag and Drop Files</h2>
-            <input className="hidden" type="file" />
+            <input className="" type="file" />
           </div>
         </div>
         {uploadedFile ? (
