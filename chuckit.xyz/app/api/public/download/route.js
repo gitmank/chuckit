@@ -17,7 +17,7 @@ export async function GET(req, res) {
         if (!metadata) {
             return NextResponse.json({ error: "File not found." }, { status: 404 });
         }
-        await db.collection("files").doc(fileCode).update({ count: metadata.count + 1 });
+        await db.collection("files").doc(fileCode).update({ accessCount: metadata.accessCount || 0 + 1 });
 
         // create download URL for client
         const fileObject = bucket.file(`${metadata.name}`);
