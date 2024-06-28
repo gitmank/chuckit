@@ -130,7 +130,7 @@ const FileUploadPage = () => {
       });
       if (response.status !== 200) {
         const error = await response.json();
-        console.error("PUT /upload error", error);
+        console.error("PUT /upload error");
         setUploadedFile(null);
         return false;
       }
@@ -148,7 +148,7 @@ const FileUploadPage = () => {
       });
       if (response.status !== 200) {
         const { error } = await response.json();
-        console.error("POST /upload error", error);
+        console.error("POST /upload error");
         alert(error);
         setUploadedFile(null);
         return;
@@ -156,7 +156,7 @@ const FileUploadPage = () => {
       const result = await response.json();
       return result;
     } catch (error) {
-      console.error("POST /upload error", error);
+      console.error("POST /upload error");
     }
   };
 

@@ -53,7 +53,7 @@ const RoadmapPage = () => {
         throw new Error();
       }
     } catch (error) {
-      console.error("POST /upvote error", error);
+      console.error("POST /upvote error");
       alert("Failed to upvote feature.");
     }
   };
@@ -67,7 +67,7 @@ const RoadmapPage = () => {
       };
       updateVotes(newVotes);
     } catch (error) {
-      console.error("POST /upvote error", error);
+      console.error("POST /upvote error");
     }
   };
 

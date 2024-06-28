@@ -24,19 +24,19 @@ const FilePage = () => {
         }
       } else {
         const { error } = await res.json();
-        console.error("GET /download error ", error);
+        console.error("GET /download error ");
         setStatus(STATUS_ENUM.ERROR);
       }
     } catch (error) {
-      console.error("File download error", error);
+      console.error("File download error");
       setStatus(STATUS_ENUM.ERROR);
     }
   };
 
   useEffect(() => {
     getDownloadLink(code).then((result) => {
-      setFileLink(result.downloadURL);
-      setMetadata(result.metadata);
+      setFileLink(result?.downloadURL);
+      setMetadata(result?.metadata);
       setStatus(STATUS_ENUM.SUCCESS);
       return result;
     });
@@ -84,10 +84,10 @@ const FilePage = () => {
         className="flex w-10/12 h-[500px] justify-center items-center rounded-lg border-white border-2"
       ></iframe>
       <p className="text-center self-center">
-        {metadata.name.length > 20
-          ? `[${metadata.name.substring(0, 10)}...${metadata.name.slice(-10)}]`
-          : `${metadata.name}`}{" "}
-        ({(metadata.size / 1000000).toFixed(2)} MB)
+        {metadata?.name.length > 20
+          ? `[${metadata?.name.substring(0, 10)}...${metadata.name.slice(-10)}]`
+          : `${metadata?.name}`}{" "}
+        ({(metadata?.size / 1000000).toFixed(2)} MB)
       </p>
     </main>
   );

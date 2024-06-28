@@ -11,7 +11,7 @@ export async function GET(req, res) {
         const upvotes = await client.get(key);
         return NextResponse.json({ upvotes }, { status: 200 });
     } catch (error) {
-        console.error("GET /upvotes error", error);
+        console.error("GET /upvotes error");
         return NextResponse.json({ error: "Internal server error." }, { status: 500 });
     }
 }
@@ -27,7 +27,7 @@ export async function POST(req, res) {
         const upvotes = await client.get(key);
         return NextResponse.json({ upvotes }, { status: 200 });
     } catch (error) {
-        console.error('POST /upvotes error', error);
+        console.error('POST /upvotes error');
         return NextResponse.json({ error: "Internal server error." }, { status: 500 });
     }
 }
@@ -43,7 +43,7 @@ export async function PUT(req, res) {
         await client.set(key, upvotes);
         return NextResponse.json({ status: 200 });
     } catch (error) {
-        console.error('POST /upvotes error', error);
+        console.error('POST /upvotes error');
         return NextResponse.json({ error: "Internal server error." }, { status: 500 });
     }
 }
