@@ -260,10 +260,10 @@ const FileUploadPage = () => {
           📍&nbsp;&nbsp;app in development
         </p>
         <p className="text-sm">
-          currently - 7 days expiry, 4MB limit, no custom links
+          currently - 7D expiry, 20MB limit, 100 downloads, no custom links
         </p>
         <p className="text-sm">
-          coming this week - 30 day expiry, 20 MB limit, custom links
+          coming next week - 1M expiry, encryption, custom links
         </p>
       </div>
       <a
