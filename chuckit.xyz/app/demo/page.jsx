@@ -49,30 +49,39 @@ const FILE_ICONS = {
   "text/x-python-script": "{ 🐍 }",
 };
 
+const UPLOAD_LIMIT = 20 * 1024 * 1024;
+
 const FileUploadPage = () => {
   const [dragging, setDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [fileLink, setFileLink] = useState(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
 
   const handleDragEnter = (e) => {
     e.preventDefault();
+    if (loading) return;
     setDragging(true);
   };
 
   const handleDragLeave = (e) => {
     e.preventDefault();
+    if (loading) return;
     setDragging(false);
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
+    if (loading) return;
+    setDragging(true);
   };
 
   const handleDrop = async (e) => {
+    e.preventDefault();
     setError(false);
+    if (loading) return;
+    setLoading(true);
     e.preventDefault();
     setDragging(false);
     let files = e.dataTransfer?.files || e.target?.files;
@@ -80,34 +89,72 @@ const FileUploadPage = () => {
       alert("upload a single file");
       return;
     }
-    if (files[0].size > 4 * 1024 * 1024) {
-      alert("file size limit 4MB");
+    if (files[0].size > UPLOAD_LIMIT) {
+      alert(`file size limit ${UPLOAD_LIMIT / 1024 / 1024} MB`);
       setError(true);
       return;
     }
     setUploadedFile(files[0]);
     setFileLink(null);
 
-    // upload file
-    const formData = new FormData();
-    formData.append("file", files[0]);
+    const metadata = {
+      name: files[0].name,
+      size: files[0].size,
+      type: files[0].type,
+      extension: files[0].name.split(".").pop(),
+    };
 
-    // send request
+    const linkResult = await getUploadLink(metadata);
+    if (!linkResult) {
+      setError(true);
+      return;
+    }
+    const fileResult = await uploadFile(files[0], linkResult.uploadURL);
+    if (!fileResult) {
+      setError(true);
+      return;
+    }
+    setFileLink(`https://chuckit.xyz/${linkResult.fileCode}`);
+    setLoading(false);
+  };
+
+  const uploadFile = async (file, uploadURL) => {
+    try {
+      const response = await fetch(uploadURL, {
+        method: "PUT",
+        body: file,
+        headers: {
+          "Content-Type": file.type,
+          "Content-Length": file.size - 3000,
+        },
+      });
+      if (response.status !== 200) {
+        const error = await response.json();
+        console.error("PUT /upload error", error);
+        setUploadedFile(null);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("PUT /upload error", error);
+    }
+  };
+
+  const getUploadLink = async (metadata) => {
     try {
       const response = await fetch("/api/public/upload", {
         method: "POST",
-        body: formData,
+        body: JSON.stringify(metadata),
       });
       if (response.status !== 200) {
-        const result = await response.json();
-        console.error("POST /upload error", result.message);
-        alert(result.message);
+        const { error } = await response.json();
+        console.error("POST /upload error", error);
+        alert(error);
         setUploadedFile(null);
         return;
       }
       const result = await response.json();
-      setFileLink(result.link);
-      console.log("POST /upload success", result.message);
+      return result;
     } catch (error) {
       console.error("POST /upload error", error);
     }
@@ -132,7 +179,7 @@ const FileUploadPage = () => {
       <div
         className={
           dragging
-            ? "flex flex-col p-2 bg-blue-500 animate-pulse text-black rounded-lg shadow-lg text-center w-full md:w-1/2 h-3/5 justify-around duration-100"
+            ? "flex flex-col p-2 bg-blue-200 animate-pulse text-black rounded-lg shadow-lg text-center w-full md:w-2/3 lg:w-1/2 h-3/5 justify-around duration-100"
             : "flex flex-col p-2 bg-white text-black rounded-lg shadow-lg text-center w-full md:w-2/3 lg:w-1/2 h-3/5 justify-around duration-100"
         }
       >
@@ -145,7 +192,7 @@ const FileUploadPage = () => {
             type="file"
           />
           <p className="text-sm text-red-400 font-bold">
-            {error ? "file size over 4MB" : ""}
+            {error ? "error uploading file" : ""}
           </p>
         </div>
         {uploadedFile ? (
@@ -165,25 +212,36 @@ const FileUploadPage = () => {
                   : `${(uploadedFile.size / 1000).toFixed(2)} KB`}
               </p>
             </div>
-            {/* <div className="w-2/3 md:w-1/2 bg-black rounded-full h-3">
-              <div
-                className="bg-blue-500 h-3 rounded-full"
-                style={{ width: `${uploadProgress}%` }}
-              ></div>
-              <p className="text-xs animate-pulse mt-2">
-                uploaded {uploadProgress}%
-              </p>
-            </div> */}
+            <p className="text-sm my-auto mx-auto">
+              {loading
+                ? `uploading file, estimated ${(
+                    uploadedFile.size / 1000000
+                  ).toFixed(0)} sec`
+                : ""}
+            </p>
             {fileLink ? (
-              <p
-                onClick={handleCopyLink}
-                className="bg-gray-600 text-sm lg:text-base font-mono text-white p-1 w-max px-1 rounded-md shadow-blue-500 shadow-lg duration-100 hover:scale-105 active:scale-95"
-              >
-                {copied ? "✅ " : "📋 "} {fileLink.split("://")[1]}
-              </p>
+              <div className="flex flex-col w-full items-center gap-4">
+                <p
+                  onClick={handleCopyLink}
+                  className="bg-gray-600 text-sm lg:text-base font-mono text-white p-1 w-max px-1 rounded-md shadow-blue-500 shadow-lg duration-100 hover:scale-105 active:scale-95"
+                >
+                  {copied ? "✅ " : "📋 "} {fileLink.split("://")[1]}
+                </p>
+                <button
+                  className="bg-red-400 text-white p-1 text-xs px-4 rounded-md w-max self-center"
+                  onClick={() => {
+                    setUploadedFile(null);
+                    setFileLink(null);
+                    setLoading(false);
+                    setError(false);
+                  }}
+                >
+                  Clear
+                </button>
+              </div>
             ) : (
               <button
-                className="bg-blue-500 text-white p-2 px-4 rounded-md"
+                className="bg-red-400 text-white p-2 px-4 rounded-md w-max self-center"
                 onClick={() => {
                   setUploadedFile(null);
                   setFileLink(null);
@@ -210,7 +268,7 @@ const FileUploadPage = () => {
       </div>
       <a
         href="/"
-        className="absolute top-4 left-4 text-xl font-bold text-blue-400 hover:text-blue-300"
+        className="absolute top-4 left-4 text-2xl font-bold text-blue-400 hover:text-blue-300"
       >
         chuckit.xyz
       </a>

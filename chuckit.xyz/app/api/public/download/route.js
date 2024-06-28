@@ -1,37 +1,32 @@
 import { NextResponse } from "next/server";
 import { bucket } from "@/utilities/connectToGCS";
+import { db } from "@/utilities/connectToFirestore";
 
 export async function GET(req, res) {
     try {
         // get file name from request
         const url = new URL(req.url.slice())
-        const fileName = url.searchParams.get("file");
-        if (!fileName) {
-            return NextResponse.json({ message: "No file name provided." }, { status: 400 });
-        }
-        if (!fileName) {
-            return NextResponse.json({ message: "No file name provided." }, { status: 400 });
+        const fileCode = url.searchParams.get("code");
+        if (!fileCode) {
+            return NextResponse.json({ error: "No file name provided." }, { status: 400 });
         }
 
-        // get file metadata from GCS
-        const [metadata] = await bucket.file(fileName).getMetadata();
+        // get file metadata from db
+        const doc = await db.collection("files").doc(fileCode).get();
+        const metadata = doc?.data() || null;
         if (!metadata) {
-            return NextResponse.json({ message: "File not found." }, { status: 404 });
+            return NextResponse.json({ error: "File not found." }, { status: 404 });
         }
+        await db.collection("files").doc(fileCode).update({ count: metadata.count + 1 });
 
-        // download file
-        const [fileBuffer] = await bucket.file(fileName).download({
-            validation: "md5",
+        // create download URL for client
+        const fileObject = bucket.file(`${metadata.name}`);
+        const [downloadURL] = await fileObject.getSignedUrl({
+            action: "read",
+            expires: Date.now() + 1 * 60 * 60 * 1000, // 1 hours
         });
 
-        // send file as response
-        return new NextResponse(fileBuffer, {
-            headers: {
-                "Content-Type": metadata.metadata.contentType,
-                "Content-Disposition": `attachment; filename=${metadata.metadata?.originalName || `chuckit-${fileName}`}`,
-                "X-public-url": metadata.metadata?.public_url || "",
-            },
-        });
+        return NextResponse.json({ downloadURL, metadata });
     } catch (error) {
         console.error("GET /download error");
         return NextResponse.json({ status: 500 });
