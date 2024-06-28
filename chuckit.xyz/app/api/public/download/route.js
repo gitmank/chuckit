@@ -19,11 +19,16 @@ export async function GET(req, res) {
         }
         await db.collection("files").doc(fileCode).update({ downloads: (metadata.downloads || 0) + 1 });
 
+        // rate limit downloads
+        if (metadata.downloads >= 100) {
+            return NextResponse.json({ error: "File access blocked." }, { status: 429 });
+        }
+
         // create download URL for client
         const fileObject = bucket.file(`${metadata.name}`);
         const [downloadURL] = await fileObject.getSignedUrl({
             action: "read",
-            expires: Date.now() + 1 * 60 * 60 * 1000, // 1 hour
+            expires: Date.now() + 10 * 60 * 1000, // 10 minutes
         });
 
         return NextResponse.json({ downloadURL, metadata });
