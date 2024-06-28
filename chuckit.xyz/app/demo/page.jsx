@@ -55,6 +55,7 @@ const FileUploadPage = () => {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileLink, setFileLink] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleDragEnter = (e) => {
     e.preventDefault();
@@ -71,11 +72,17 @@ const FileUploadPage = () => {
   };
 
   const handleDrop = async (e) => {
+    setError(false);
     e.preventDefault();
     setDragging(false);
     let files = e.dataTransfer?.files || e.target?.files;
     if (!files || files.length !== 1) {
       alert("upload a single file");
+      return;
+    }
+    if (files[0].size > 4 * 1024 * 1024) {
+      alert("file size limit 4MB");
+      setError(true);
       return;
     }
     setUploadedFile(files[0]);
@@ -130,12 +137,17 @@ const FileUploadPage = () => {
         }
       >
         <h2 className="text-xl font-bold">Drag and Drop Files</h2>
-        <input
-          onChange={handleDrop}
-          className="block w-10/12 max-w-[400px] self-center text-sm p-1 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-          id="file_input"
-          type="file"
-        />
+        <div className="flex flex-col gap-2 items-center justify-center text-center w-full h-max">
+          <input
+            onChange={handleDrop}
+            className="block w-10/12 max-w-[400px] self-center text-sm p-1 text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+            id="file_input"
+            type="file"
+          />
+          <p className="text-sm text-red-400 font-bold">
+            {error ? "file size over 4MB" : ""}
+          </p>
+        </div>
         {uploadedFile ? (
           <div className="flex flex-col text-center justify-around w-full items-center p-4 gap-4">
             <div className="flex flex-col items-center justify-center gap-4 w-full">
@@ -190,9 +202,18 @@ const FileUploadPage = () => {
           📍&nbsp;&nbsp;app in development
         </p>
         <p className="text-sm">
-          tldr - 7 day expiry, 10MB file limit, no custom links yet
+          currently - 7 days expiry, 4MB limit, no custom links
+        </p>
+        <p className="text-sm">
+          coming this week - 30 day expiry, 20 MB limit, custom links
         </p>
       </div>
+      <a
+        href="/"
+        className="absolute top-4 left-4 text-xl font-bold text-blue-400 hover:text-blue-300"
+      >
+        chuckit.xyz
+      </a>
     </main>
   );
 };
