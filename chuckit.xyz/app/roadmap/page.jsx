@@ -5,7 +5,6 @@ const KEY = "features";
 
 const FEATURES = {
   "customize links": 0,
-  "preview files": 0,
   "nearby sharing": 0,
   "share folders": 0,
   "passcode protection": 0,
