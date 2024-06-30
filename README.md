@@ -1,8 +1,9 @@
 # chuckit.xyz
 ### quickly toss your files to anyone, anywhere
 - drag n drop files to get memorable shortlink
-- add expiry and passcode (optional)
-- no sign-up required, fully anonymous
-- no file size limits
-- 100% safe, end-to-end encrypted
-- just chuck it!
+- preview files and download them
+- no signup required, fully anonymous
+
+## Coming soon
+- add expiry and passcode (coming)
+- 100% safe, end-to-end encrypted (free signup required)
