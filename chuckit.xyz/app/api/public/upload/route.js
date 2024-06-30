@@ -26,14 +26,18 @@ export async function POST(req, res) {
         // create upload URL for client
         const fileObject = bucket.file(`${cleanFileName}`);
         const [uploadURL] = await fileObject.getSignedUrl({
+            version: "v4",
             action: "write",
             expires: Date.now() + 1 * 60 * 1000, // 1 minute
             contentType: type,
+            extensionHeaders: {
+                "x-upload-content-length": size,
+            },
         });
 
         // update IP rate limit quota
         const DEFAULT_QUOTA = 8;
-        const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for") || req.connection.remoteAddress || '0.0.0.0';
+        const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for") || req.connection?.remoteAddress || '0.0.0.0';
         const ipRef = db.collection("ip").doc(ip);
         const ipDoc = await ipRef.get();
         if (ipDoc.exists) {
@@ -43,7 +47,7 @@ export async function POST(req, res) {
                 return NextResponse.json({ error: "You have been rate limited." }, { status: 400, headers: { "Retry-After": timeLeft } });
             }
             if (data.quota <= 1) {
-                await ipRef.update({ blockedUntil: new Date().getTime() + 4 * 60 * 60 * 1000 }); // 1 hour
+                await ipRef.update({ blockedUntil: new Date().getTime() + 4 * 60 * 60 * 1000 }); // 4 hour
                 await ipRef.update({ quota: DEFAULT_QUOTA });
             }
             await ipRef.update({ count: data.count + 1, quota: data.quota - 1 });
