@@ -20,7 +20,7 @@ export async function GET(req, res) {
         await db.collection("files").doc(fileCode).update({ downloads: (metadata.downloads || 0) + 1 });
 
         // rate limit downloads
-        if (metadata.downloads >= 100) {
+        if (metadata.downloads >= 25) {
             return NextResponse.json({ error: "File access blocked." }, { status: 429 });
         }
 
