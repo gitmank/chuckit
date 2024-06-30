@@ -125,7 +125,7 @@ const FileUploadPage = () => {
         body: file,
         headers: {
           "Content-Type": file.type,
-          "Content-Length": file.size - 3000,
+          "X-Upload-Content-Length": file.size,
         },
       });
       if (response.status !== 200) {
