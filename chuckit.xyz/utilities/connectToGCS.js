@@ -1,5 +1,7 @@
 const { Storage } = require('@google-cloud/storage');
 
+const BUCKET_NAME = process.env.NODE_ENV === 'production' ? process.env.PROD_BUCKET_NAME : process.env.TEST_BUCKET_NAME;
+
 const storage = new Storage({
     projectId: 'chuckit-xyz',
     credentials: {
@@ -8,7 +10,7 @@ const storage = new Storage({
     },
 });
 
-const bucket = storage.bucket('chuckit-bucket-main');
+const bucket = storage.bucket(BUCKET_NAME);
 
 module.exports = {
     bucket,
