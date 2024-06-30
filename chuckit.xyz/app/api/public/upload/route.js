@@ -46,7 +46,7 @@ export async function POST(req, res) {
                 const timeLeft = (data.blockedUntil - new Date().getTime()) / 1000;
                 return NextResponse.json({ error: "You have been rate limited." }, { status: 400, headers: { "Retry-After": timeLeft } });
             }
-            if (data.quota <= 1) {
+            if (data.quota < 1) {
                 await ipRef.update({ blockedUntil: new Date().getTime() + 4 * 60 * 60 * 1000 }); // 4 hour
                 await ipRef.update({ quota: DEFAULT_QUOTA });
             }
@@ -75,7 +75,7 @@ export async function POST(req, res) {
 
         return NextResponse.json({ uploadURL, fileCode });
     } catch (error) {
-        console.error("POST /upload error");
+        console.error("POST /upload error", error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
