@@ -1,16 +1,9 @@
 "use client";
 import React from "react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import PopUp from "@/components/small/PopUp";
+import SignupForm from "@/components/auth/SignupForm";
+import LoginForm from "@/components/auth/LoginForm";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AuthPanel() {
   return (
@@ -21,29 +14,52 @@ export default function AuthPanel() {
       <p className="text-balance text-foreground text-center">
         we don't want your identity, 100% anonymous
       </p>
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">login or signup</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">nickname</Label>
-            <Input id="nickname" type="text" placeholder="leto2" required />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">password</Label>
-            <Input id="password" type="password" required />
-          </div>
-        </CardContent>
-        <CardFooter className="gap-4">
-          <Button className="w-full text-white">login</Button>
-          <Button className="w-full text-white">signup</Button>
-        </CardFooter>
-      </Card>
+      <Tabs defaultValue="signup" className="w-full max-w-sm">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="signup">signup</TabsTrigger>
+          <TabsTrigger value="login">login</TabsTrigger>
+        </TabsList>
+        <TabsContent value="signup">
+          <SignupForm />
+        </TabsContent>
+        <TabsContent value="login">
+          <LoginForm />
+        </TabsContent>
+      </Tabs>
       <div className="mt-4 text-center text-base">
         <p className="text-balance text-foreground bg-green-500 mb-4 px-1 text-sm md:text-base">
           4x limits, custom links, 100% secure
         </p>
+        <PopUp
+          openButtonText={"💙 so much more"}
+          title={"1M expiry, 80MB limit, 100 downloads 💚"}
+          closeButtonText={"Let's do it!"}
+        >
+          <div className="flex flex-col w-full h-full gap-4 py-2">
+            <div>
+              <p className="text-blue-400 text-base font-bold text-left">
+                🔗 Shortlinks (coming soon)
+              </p>
+              <p className="text-left">
+                own 5 memorable custom links, assign them to any file
+              </p>
+            </div>
+            <div>
+              <p className="text-blue-400 text-base font-bold text-left">
+                👥 Private Share (coming soon)
+              </p>
+              <p className="text-left">
+                reserve a nickname, share files with specific users
+              </p>
+            </div>
+            <div>
+              <p className="text-blue-400 text-base font-bold text-left">
+                🛜 Nearby Share (coming soon)
+              </p>
+              <p className="text-left">directly drop a file to nearby users</p>
+            </div>
+          </div>
+        </PopUp>
       </div>
     </div>
   );
