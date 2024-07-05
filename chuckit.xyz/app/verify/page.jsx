@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const STATUS = {
@@ -8,7 +8,7 @@ const STATUS = {
   ERROR: "error",
 };
 
-const VerifyPage = () => {
+function Verify() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -72,6 +72,12 @@ const VerifyPage = () => {
       </a>
     </main>
   );
-};
+}
 
-export default VerifyPage;
+export default function VerifyPage() {
+  return (
+    <Suspense>
+      <Verify />
+    </Suspense>
+  );
+}
