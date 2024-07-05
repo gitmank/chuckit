@@ -7,17 +7,8 @@ import CopyLink from "./small/CopyLink";
 // ui components
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import PopUp from "@/components/small/PopUp";
 
 // constants
 const UPLOAD_LIMIT = 20 * 1024 * 1024;
@@ -224,7 +215,7 @@ export default function UploadPanel() {
       <div className="grid gap-2 text-center">
         <h1 className="text-3xl font-bold">free drag n drop</h1>
         <p className="text-balance text-foreground text-center">
-          quickly share non-sensitive files
+          quickly share sensitive files
         </p>
       </div>
       {inputFile ? (
@@ -289,37 +280,29 @@ export default function UploadPanel() {
         </Card>
       )}
       <div className="mt-4 text-center text-base">
-        <p className="text-balance text-foreground bg-destructive mb-4 px-1 text-sm md:text-base">
-          1 week expiry, 20MB limit, 25 downloads, unsafe
+        <p className="text-balance text-foreground bg-blue-500 mb-4 px-1 text-sm md:text-base">
+          1 week expiry, 20MB limit, 25 downloads
         </p>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button className="rounded-full text-xs p-1 px-3" variant="outline">
-              ⚠️&nbsp;&nbsp;Security Alert
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent className="w-11/12 rounded-md">
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Please create a free account &lt;3
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                <p className="text-red-400 text-base">Public Access Warning</p>
-                <p>
-                  When shared with direct drag and drop, anyone with the link
-                  can access your files. Please refrain from uploading any
-                  sensitive information without an account. An account will help
-                  us encrypt your data.
-                </p>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogAction className="text-white">
-                I understand
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <PopUp
+          openButtonText={"🔐 100% secure"}
+          title={"Your files are safe, as long as your link is 💚"}
+          closeButtonText={"I understand"}
+        >
+          <p className="text-green-500 text-base font-bold">
+            🔐 Client-side encryptions
+          </p>
+          <p>
+            We generate an encryption key in the browser, which is available
+            only in the copied link. When files are accessed, they are decrypted
+            in the browser, and the key is never sent to us or stored with us.
+          </p>
+          <p className="text-yellow-500 text-base font-bold mt-4">⚠️ Caution</p>
+          <p>
+            This method ensures that we can never access your file, but the key
+            is stored in the link you will be copying, and anyone with the link
+            will be able to access the file.
+          </p>
+        </PopUp>
       </div>
     </div>
   );

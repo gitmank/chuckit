@@ -1,4 +1,5 @@
 "use client";
+import NavBar from "@/components/NavBar";
 import React, { useEffect, useState } from "react";
 
 const KEY = "features";
@@ -72,28 +73,31 @@ const RoadmapPage = () => {
   };
 
   return (
-    <main className="container mx-auto lg:w-2/3 p-4 flex flex-col justify-center gap-8">
-      <div>
-        <h1 className="text-2xl font-bold mb-2 mt-4">Feature Roadmap</h1>
-        <p className="text-base mb-4">upvote upto 3 features you want most</p>
-      </div>
-      <ul className="space-y-8 text-lg">
-        {Object.keys(FEATURES).map((feature, index) => (
-          <li
-            key={index}
-            className="flex items-center border-b-[1px] border-dashed border-white py-2"
-          >
-            <button className="mr-2" onClick={() => handleVote(feature)}>
-              🔼&nbsp;&nbsp;{feature}
-            </button>
-            <span className="ml-auto">{features[feature]}</span>
-          </li>
-        ))}
-      </ul>
-      <a className="w-full text-center text-lg underline" href="/">
-        Return Home
-      </a>
-    </main>
+    <>
+      <NavBar />
+      <main className="container mx-auto max-w-[800px] w-full p-4 flex flex-col justify-start gap-8">
+        <div>
+          <h1 className="text-2xl font-bold mb-2 mt-4">Feature Roadmap</h1>
+          <p className="text-base mb-4">upvote upto 3 features you want most</p>
+        </div>
+        <ul className="space-y-8 text-lg">
+          {Object.keys(FEATURES).map((feature, index) => (
+            <li
+              key={index}
+              className="flex items-center border-b-[1px] border-dashed border-white py-2"
+            >
+              <button className="mr-2" onClick={() => handleVote(feature)}>
+                🔼&nbsp;&nbsp;{feature}
+              </button>
+              <span className="ml-auto">{features[feature]}</span>
+            </li>
+          ))}
+        </ul>
+        <a className="w-full text-center text-lg underline" href="/">
+          Return Home
+        </a>
+      </main>
+    </>
   );
 };
 
