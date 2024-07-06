@@ -69,7 +69,7 @@ export async function POST(req, res) {
             newFileName: fileCode,
             ip: ip,
             timestamp: new Date(),
-            downloads: 0,
+            downloads: 50,
             passcode: "",
         });
 

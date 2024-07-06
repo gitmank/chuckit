@@ -17,10 +17,10 @@ export async function GET(req, res) {
         if (!metadata) {
             return NextResponse.json({ error: "File not found." }, { status: 404 });
         }
-        await db.collection("files").doc(fileCode).update({ downloads: (metadata.downloads || 0) + 1 });
+        await db.collection("files").doc(fileCode).update({ downloads: (metadata.downloads || 50) - 1 });
 
         // rate limit downloads
-        if (metadata.downloads >= 25) {
+        if (metadata.downloads < 1) {
             return NextResponse.json({ error: "File access blocked." }, { status: 429 });
         }
 
