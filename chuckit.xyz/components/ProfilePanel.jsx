@@ -29,7 +29,7 @@ export default function ProfilePanel({ user }) {
       <div className="grid gap-4 text-center">
         <h1 className="text-3xl font-bold">hi, {user.username}</h1>
         <p className="text-balance text-foreground text-center">
-          we're working on speical features for you
+          we're working on special features for you
         </p>
         <p className="text-sm">
           last login: {new Date(user.lastLogin).toLocaleString("en-in")}

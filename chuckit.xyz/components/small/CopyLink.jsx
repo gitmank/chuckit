@@ -17,7 +17,7 @@ export default function CopyLink({ link }) {
       onClick={handleCopyLink}
       className="bg-gray-600 text-sm lg:text-base font-mono text-white p-1 w-max px-2 rounded-md shadow-blue-500 shadow-lg duration-100 hover:scale-105 active:scale-95"
     >
-      {copied ? "✅ " : "📋 "} {link.split("://").pop()}
+      {copied ? "✅ " : "📋 "} copy secure link
     </p>
   );
 }

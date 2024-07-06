@@ -28,7 +28,10 @@ export default function PopUp({
       <AlertDialogContent className="w-11/12 rounded-md">
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{children}</AlertDialogDescription>
+          {children}
+          <AlertDialogDescription className="sr-only">
+            your files are end-to-end encrypted
+          </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogAction className="text-white">
