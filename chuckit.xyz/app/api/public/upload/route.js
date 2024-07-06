@@ -10,8 +10,8 @@ export async function POST(req, res) {
     try {
         // validate request data
         const reqData = await req.json();
-        const { name, size, type, extension } = reqData;
-        if (!name || !size) {
+        const { name, size, type, extension, iv } = reqData;
+        if (!name || !size || !type || !extension || !iv) {
             return NextResponse.json({ error: "Missing request data." }, { status: 400 });
         }
         if (size > UPLOAD_LIMIT) {
@@ -29,7 +29,7 @@ export async function POST(req, res) {
             version: "v4",
             action: "write",
             expires: Date.now() + 1 * 60 * 1000, // 1 minute
-            contentType: type,
+            contentType: 'application/octet-stream',
             extensionHeaders: {
                 "x-upload-content-length": size,
             },
@@ -44,7 +44,7 @@ export async function POST(req, res) {
             const data = ipDoc.data();
             if (data.blockedUntil > new Date().getTime()) {
                 const timeLeft = (data.blockedUntil - new Date().getTime()) / 1000;
-                return NextResponse.json({ error: "You have been rate limited." }, { status: 400, headers: { "Retry-After": timeLeft } });
+                return NextResponse.json({ error: `try after ${timeLeft / 60} mins` }, { status: 400, headers: { "Retry-After": timeLeft } });
             }
             if (data.quota < 1) {
                 await ipRef.update({ blockedUntil: new Date().getTime() + 4 * 60 * 60 * 1000 }); // 4 hour
@@ -66,6 +66,7 @@ export async function POST(req, res) {
             size: size,
             type: type,
             extension: extension,
+            iv: iv,
             newFileName: fileCode,
             ip: ip,
             timestamp: new Date(),

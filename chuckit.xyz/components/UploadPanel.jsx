@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import aesjs from "aes-js";
 
 // custom components
 import CopyLink from "./small/CopyLink";
@@ -58,146 +59,200 @@ const FILE_ICONS = {
   "text/typescript": "{ 📄 }",
   "text/php": "{ 📄 }",
   "text/x-python-script": "{ 🐍 }",
+  // books
+  "application/epub+zip": "📚",
+  "application/vnd.amazon.ebook": "📚",
+  "application/x-mobipocket-ebook": "📚",
+  // others
+  "application/octet-stream": "[0101]",
+};
+const STATUS = {
+  READY: "READY",
+  LOADING: "LOADING",
+  ENCRYPTING: "ENCRYPTING",
+  UPLOADING: "UPLOADING",
+  FILE_ERROR: "FILE_ERROR",
+  ENC_ERROR: "ENC_ERROR",
+  UPLOAD_ERROR: "UPLOAD_ERROR",
+  ERROR: "ERROR",
+  SUCCESS: "SUCCESS",
 };
 
 export default function UploadPanel() {
-  // state for input file, upload URL and resulting link
-  const [inputFile, setInputFile] = useState(null);
-  const [uploadURL, setUploadURL] = useState(null);
+  // state for result link
   const [fileLink, setFileLink] = useState(null);
-  // state for loading, dragging and errors
-  const [loading, setLoading] = useState(false);
+  const [inputFile, setInputFile] = useState(null);
+  const [encResult, setEncResult] = useState({});
+  // state for loading, errors and dragging UI
+  const [status, setStatus] = useState(STATUS.READY);
   const [dragging, setDragging] = useState(false);
-  const [error, setError] = useState(false);
 
-  // effect to handle file upload in an event driven way
+  // encrypt file on input
   useEffect(() => {
+    const encryptFile = async () => {
+      setStatus(STATUS.ENCRYPTING);
+      try {
+        // generate iv + key
+        const generateAESKey = async () => {
+          const key = await crypto.subtle.generateKey(
+            {
+              name: "AES-CBC",
+              length: 128,
+            },
+            true,
+            ["encrypt", "decrypt"]
+          );
+          const keyBytes = await crypto.subtle.exportKey("raw", key);
+          return new Uint8Array(keyBytes);
+        };
+        // encrypt file using aes-js
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          const data = new Uint8Array(e.target.result);
+          const key = await generateAESKey();
+          const iv = await generateAESKey();
+          const aesCBC = new aesjs.ModeOfOperation.cbc(key, iv);
+          const paddedBytes = aesjs.padding.pkcs7.pad(data);
+          const encryptedBytes = aesCBC.encrypt(paddedBytes);
+          const encryptedBlob = new Blob([encryptedBytes], {
+            type: "application/octet-stream",
+          });
+          const readableKey = Array.from(key)
+            .map((byte) => byte.toString(16).padStart(2, "0"))
+            .join("");
+          const result = {
+            key: readableKey,
+            iv: iv,
+            blob: encryptedBlob,
+          };
+          setTimeout(() => {
+            setEncResult(result);
+          }, 1000);
+        };
+        reader.readAsArrayBuffer(inputFile);
+      } catch (error) {
+        console.log("error encrypting file");
+        setStatus(STATUS.ENC_ERROR);
+      }
+    };
     if (inputFile) {
-      handleSubmit();
+      encryptFile();
     }
   }, [inputFile]);
 
+  // upload file on ecnryption result
   useEffect(() => {
-    if (uploadURL) {
-      uploadFile();
+    const getUploadLink = async () => {
+      setStatus(STATUS.UPLOADING);
+      try {
+        const metadata = {
+          name: inputFile.name,
+          size: encResult.blob.size,
+          type: inputFile.type,
+          extension: inputFile.name.split(".").pop(),
+          iv: encResult.iv,
+        };
+        const response = await fetch("/api/public/upload", {
+          method: "POST",
+          body: JSON.stringify(metadata),
+        });
+        if (response.status !== 200) {
+          const { error } = await response.json();
+          console.error("POST /upload error", error);
+          alert(error);
+          setStatus(STATUS.UPLOAD_ERROR);
+        }
+        const result = await response.json();
+        setFileLink(`https://chuckit.xyz/${result.fileCode}#${encResult.key}`);
+        const uploaded = await uploadFile(result.uploadURL);
+        if (uploaded) {
+          setStatus(STATUS.SUCCESS);
+        }
+      } catch (error) {
+        console.error("POST /upload error");
+        setStatus(STATUS.UPLOAD_ERROR);
+      }
+    };
+    if (encResult?.blob && encResult?.key) {
+      getUploadLink();
     }
-  }, [uploadURL]);
+  }, [encResult]);
 
-  // event handlers
+  // upload file to GCS
+  const uploadFile = async (uploadURL) => {
+    try {
+      const response = await fetch(uploadURL, {
+        method: "PUT",
+        body: encResult.blob,
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "X-Upload-Content-Length": encResult.blob.size,
+        },
+      });
+      if (response.status !== 200) {
+        console.error("PUT /upload error", response.status);
+        setStatus(STATUS.UPLOAD_ERROR);
+      } else {
+        return true;
+      }
+    } catch (error) {
+      console.error("PUT /upload error");
+      setStatus(STATUS.UPLOAD_ERROR);
+    }
+  };
+
+  // handle DOM events
   const handleDragEnter = (e) => {
     e.preventDefault();
-    if (loading) return;
+    if (status === STATUS.LOADING) return;
     setDragging(true);
   };
-
   const handleDragLeave = (e) => {
     e.preventDefault();
-    if (loading) return;
+    if (status === STATUS.LOADING) return;
     setDragging(false);
   };
-
   const handleDragOver = (e) => {
     e.preventDefault();
-    if (loading) return;
+    if (status === STATUS.LOADING) return;
     setDragging(true);
   };
-
   const handleInputClick = (e) => {
     e.preventDefault();
     const input = document.getElementById("file-input");
     input.click();
   };
-
+  const clear = () => {
+    setInputFile(null);
+    setFileLink(null);
+    setEncResult({});
+  };
   const handleDrop = (e) => {
     e.preventDefault();
     setDragging(false);
-    setError(false);
-    if (loading) return;
-    const input = document.getElementById("file-input");
+    if (status === STATUS.LOADING) return;
     let files = e.dataTransfer?.files || e.target?.files;
-    if (!files) return;
-    if (files.length !== 1) {
-      alert("upload a single file");
-      setError(true);
+    if (!files || files.length !== 1 || files[0].size > UPLOAD_LIMIT) {
+      setStatus(STATUS.FILE_ERROR);
       return;
     }
+    clear();
     setInputFile(files[0]);
-    setFileLink(null);
+    setStatus(STATUS.LOADING);
   };
-
   const handleInputChange = (e) => {
-    if (loading) return;
-    if (!e?.target?.files[0]) {
-      setError(true);
+    if (status === STATUS.LOADING) return;
+    if (
+      !e?.target?.files[0] ||
+      e.target.files[0].size > UPLOAD_LIMIT ||
+      e.target.files.length !== 1
+    ) {
+      setStatus(STATUS.FILE_ERROR);
       return;
     }
+    clear();
     setInputFile(e.target.files[0]);
-    setFileLink(null);
-  };
-
-  const handleSubmit = async () => {
-    if (inputFile) {
-      setLoading(true);
-      if (inputFile.size > UPLOAD_LIMIT) {
-        alert(`file size limit ${UPLOAD_LIMIT / 1024 / 1024} MB`);
-        setInputFile(null);
-        setLoading(false);
-      } else {
-        const result = await getUploadLink();
-        if (result) {
-          setUploadURL(result);
-        } else {
-          setError(true);
-        }
-      }
-    }
-  };
-
-  const getUploadLink = async () => {
-    try {
-      const metadata = {
-        name: inputFile.name,
-        size: inputFile.size,
-        type: inputFile.type,
-        extension: inputFile.name.split(".").pop(),
-      };
-      const response = await fetch("/api/public/upload", {
-        method: "POST",
-        body: JSON.stringify(metadata),
-      });
-      if (response.status !== 200) {
-        const { error } = await response.json();
-        console.error("POST /upload error");
-        alert(error);
-        setInputFile(null);
-        return null;
-      }
-      const result = await response.json();
-      setFileLink(`https://chuckit.xyz/${result.fileCode}`);
-      return result.uploadURL;
-    } catch (error) {
-      console.error("POST /upload error");
-    }
-  };
-
-  const uploadFile = async () => {
-    try {
-      const response = await fetch(uploadURL, {
-        method: "PUT",
-        body: inputFile,
-        headers: {
-          "Content-Type": inputFile.type,
-          "X-Upload-Content-Length": inputFile.size,
-        },
-      });
-      if (response.status !== 200) {
-        console.error("PUT /upload error");
-      }
-      setLoading(false);
-      setError(false);
-    } catch (error) {
-      console.error("PUT /upload error", error);
-    }
+    setStatus(STATUS.LOADING);
   };
 
   return (
@@ -219,91 +274,146 @@ export default function UploadPanel() {
         </p>
       </div>
       {inputFile ? (
-        <Card className="w-full min-h-[300px] max-w-lg flex flex-col justify-center gap-8 items-center border-white duration-1000">
-          <div className="flex flex-col gap-4 justify-center items-center w-full h-max p-1">
-            <p className="text-center text-base">
-              {inputFile.name.length > 20
-                ? `${inputFile.name.slice(0, 20)}...`
-                : inputFile.name}
-            </p>
-            <p className="text-4xl">{FILE_ICONS[inputFile?.type] || "📁"}</p>
-            <p>
-              {inputFile.size > 1000000
-                ? `${(inputFile.size / 1000000).toFixed(2)} MB`
-                : `${(inputFile.size / 1000).toFixed(2)} KB`}
-            </p>
-          </div>
-          {loading && <p className="animate-spin">⏳</p>}
-          <div className="flex flex-col items-center justify-center w-full gap-4 h-max">
-            {fileLink && !loading ? (
-              <CopyLink link={fileLink} />
-            ) : (
-              <Button
-                onClick={() => {
-                  setInputFile(null);
-                  setFileLink(null);
-                  setLoading(false);
-                  setError(false);
-                  setUploadURL(null);
-                }}
-                className="bg-red-400 text-white text-xs rounded-full h-max hover:bg-red-500"
-              >
-                Clear
-              </Button>
-            )}
-          </div>
-          <CardFooter className={error ? "" : "hidden"}>
-            <Badge className="bg-red-500 text-white text-sm">
-              upload error
-            </Badge>
-          </CardFooter>{" "}
-        </Card>
+        <FileCard file={inputFile} status={status} fileLink={fileLink} />
       ) : (
-        <Card className="w-full min-h-[300px] max-w-lg flex flex-col justify-around items-center border-white duration-1000">
-          <section
-            onClick={handleInputClick}
-            className="flex justify-center items-center w-[100px] h-[100px] rounded-full bg-white border-2 border-white hover:scale-105 duration-100 active:scale-95"
-          >
-            <p className="text-2xl animate-none text-black">+</p>
-          </section>
-          <input
-            onChange={handleInputChange}
-            className="hidden"
-            id="file-input"
-            type="file"
-          />
-          <CardFooter className={error ? "" : "hidden"}>
-            <Badge className="bg-red-500 text-white text-sm">
-              invalid file
-            </Badge>
-          </CardFooter>
-        </Card>
+        <UploadCard
+          handleInputChange={handleInputChange}
+          handleInputClick={handleInputClick}
+          status={status}
+        />
       )}
       <div className="mt-4 text-center text-base">
         <p className="text-balance text-foreground bg-blue-500 mb-4 px-1 text-sm md:text-base">
-          1 week expiry, 20MB limit, 25 downloads
+          1 week expiry, {UPLOAD_LIMIT / 1024 / 1024} MB limit, 25 downloads
         </p>
-        <PopUp
-          openButtonText={"🔐 100% secure"}
-          title={"Your files are safe, as long as your link is 💚"}
-          closeButtonText={"I understand"}
-        >
-          <p className="text-green-500 text-base font-bold">
-            🔐 Client-side encryptions
-          </p>
-          <p>
-            We generate an encryption key in the browser, which is available
-            only in the copied link. When files are accessed, they are decrypted
-            in the browser, and the key is never sent to us or stored with us.
-          </p>
-          <p className="text-yellow-500 text-base font-bold mt-4">⚠️ Caution</p>
-          <p>
-            This method ensures that we can never access your file, but the key
-            is stored in the link you will be copying, and anyone with the link
-            will be able to access the file.
-          </p>
-        </PopUp>
+        <SecurityPopUp />
       </div>
     </div>
   );
 }
+
+// page sepcific components
+const FileCard = ({ file, status, fileLink }) => {
+  return (
+    <Card className="w-full min-h-[300px] max-w-lg flex flex-col justify-center gap-8 items-center border-white duration-1000">
+      <div className="flex flex-col gap-4 justify-center items-center w-full h-max p-1">
+        <p className="text-center text-base">
+          {file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}
+        </p>
+        <p className="text-4xl">{FILE_ICONS[file?.type] || "📁"}</p>
+        <p>
+          {file.size > 1000000
+            ? `${(file.size / 1000000).toFixed(2)} MB`
+            : `${(file.size / 1000).toFixed(2)} KB`}
+        </p>
+      </div>
+      {status === STATUS.SUCCESS && fileLink && <CopyLink link={fileLink} />}
+      <StatusMessage status={status} />
+    </Card>
+  );
+};
+const UploadCard = ({ handleInputClick, handleInputChange, status }) => {
+  return (
+    <Card className="w-full min-h-[300px] max-w-lg flex flex-col justify-around items-center border-white duration-1000">
+      <section
+        onClick={handleInputClick}
+        className="flex justify-center items-center w-[100px] h-[100px] rounded-full bg-white border-2 border-white hover:scale-105 duration-100 active:scale-95"
+      >
+        <p className="text-2xl animate-none text-black">+</p>
+      </section>
+      <input
+        onChange={handleInputChange}
+        className="hidden"
+        id="file-input"
+        type="file"
+        size={1}
+      />
+      <StatusMessage status={status} />
+    </Card>
+  );
+};
+const StatusMessage = ({ status }) => {
+  if (status === STATUS.READY) {
+    return (
+      <Badge className="bg-foreground text-black text-sm">
+        📁- - -&gt;🌐 chuck it
+      </Badge>
+    );
+  }
+  if (status === STATUS.LOADING) {
+    return (
+      <Badge className="bg-transparent text-white text-sm animate-spin">
+        ⏳
+      </Badge>
+    );
+  }
+  if (status === STATUS.ENCRYPTING) {
+    return (
+      <Badge className="bg-green-500 text-white text-sm">
+        🔐 encrypting file
+      </Badge>
+    );
+  }
+  if (status === STATUS.UPLOADING) {
+    return (
+      <Badge className="bg-blue-400 text-white text-sm">
+        📤 uploading file
+      </Badge>
+    );
+  }
+  if (status === STATUS.FILE_ERROR) {
+    return (
+      <Badge className="bg-red-500 text-white text-sm">
+        upload single file &lt; {UPLOAD_LIMIT / 1024 / 1024} MB
+      </Badge>
+    );
+  }
+  if (status === STATUS.ENC_ERROR) {
+    return (
+      <Badge className="bg-red-500 text-white text-sm">
+        🔓 could not encrypt file
+      </Badge>
+    );
+  }
+  if (status === STATUS.UPLOAD_ERROR) {
+    return (
+      <Badge className="bg-red-500 text-white text-sm">
+        ⛓️‍💥 could not upload file
+      </Badge>
+    );
+  }
+  if (status === STATUS.ERROR) {
+    return (
+      <Badge className="bg-red-500 text-white text-sm">
+        🫠 something went wrong
+      </Badge>
+    );
+  }
+  if (status === STATUS.SUCCESS) {
+    return <></>;
+  }
+};
+const SecurityPopUp = () => {
+  return (
+    <PopUp
+      openButtonText={"🔐 100% secure"}
+      title={"Your files are safe, as long as your link is 💚"}
+      closeButtonText={"I understand"}
+    >
+      <p className="text-green-500 text-base font-bold">
+        🔐 Client-side encryptions
+      </p>
+      <p>
+        We generate an encryption key in the browser, which is available only in
+        the copied link. When files are accessed, they are decrypted in the
+        browser, and the key is never sent to us or stored with us.
+      </p>
+      <p className="text-yellow-500 text-base font-bold mt-4">⚠️ Caution</p>
+      <p>
+        This method ensures that we can never access your file, but the key is
+        stored in the link you will be copying, and anyone with the link will be
+        able to access the file.
+      </p>
+    </PopUp>
+  );
+};
