@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { db } from "@/utilities/connectToFirestore";
 
 const UPLOAD_LIMIT = 20 * 1024 * 1024; // 20MB
-const words = ["pike", "bike", "cast", "rays", "cool", "blue", "sand", "oats", "wave", "hook"]
+const words = ["desk", "bike", "cast", "rays", "cool", "blue", "sand", "oats", "wave", "hook", "ball", "taps", "road", "fish", "chip", "rust", "pool", "lake", "boat", "ship"]
+const DEFAULT_QUOTA = 10;
 
 export async function POST(req, res) {
     try {
@@ -20,8 +21,8 @@ export async function POST(req, res) {
 
         // create filename and alias
         const uuid = uuidv4();
-        const fileCode = `${words[new Date().getTime() % 10]}-${uuid.substring(0, 4)}`;
-        const cleanFileName = `${name.split('.')[0].replace(/[^a-z0-9.-_+]/gi, "_")}-${uuid.substring(0, 4)}.${extension}`;
+        const fileCode = `${words[new Date().getTime() % 20]}-${uuid.slice(0, 4)}`;
+        const cleanFileName = `${name.split('.')[0].replace(/[^a-z0-9.-_+]/gi, "_")}-${uuid.slice(-8)}.${extension}`;
 
         // create upload URL for client
         const fileObject = bucket.file(`${cleanFileName}`);
@@ -36,7 +37,6 @@ export async function POST(req, res) {
         });
 
         // update IP rate limit quota
-        const DEFAULT_QUOTA = 8;
         const ip = req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for") || req.connection?.remoteAddress || '0.0.0.0';
         const ipRef = db.collection("ip").doc(ip);
         const ipDoc = await ipRef.get();
@@ -44,13 +44,14 @@ export async function POST(req, res) {
             const data = ipDoc.data();
             if (data.blockedUntil > new Date().getTime()) {
                 const timeLeft = (data.blockedUntil - new Date().getTime()) / 1000;
-                return NextResponse.json({ error: `try after ${timeLeft / 60} mins` }, { status: 400, headers: { "Retry-After": timeLeft } });
+                return NextResponse.json({ error: `rate limit: try after ${(timeLeft / 60).toFixed(0)} mins` }, { status: 429, headers: { "Retry-After": timeLeft } });
             }
-            if (data.quota < 1) {
+            if (data.quota <= 1) {
                 await ipRef.update({ blockedUntil: new Date().getTime() + 4 * 60 * 60 * 1000 }); // 4 hour
                 await ipRef.update({ quota: DEFAULT_QUOTA });
+            } else {
+                await ipRef.update({ count: data.count + 1, quota: data.quota - 1 });
             }
-            await ipRef.update({ count: data.count + 1, quota: data.quota - 1 });
         } else {
             await ipRef.set({
                 count: 1,
@@ -67,7 +68,7 @@ export async function POST(req, res) {
             type: type,
             extension: extension,
             iv: iv,
-            newFileName: fileCode,
+            code: fileCode,
             ip: ip,
             timestamp: new Date(),
             downloads: 50,
