@@ -75,7 +75,7 @@ const RoadmapPage = () => {
   return (
     <>
       <NavBar />
-      <main className="container mx-auto max-w-[800px] w-full p-4 flex flex-col justify-start gap-8">
+      <main className="container mt-14 mx-auto max-w-[800px] w-full p-4 flex flex-col justify-start gap-8">
         <div>
           <h1 className="text-2xl font-bold mb-2 mt-4">Feature Roadmap</h1>
           <p className="text-base mb-4">upvote upto 3 features you want most</p>

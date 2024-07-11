@@ -14,7 +14,7 @@ export default function AboutPage() {
             href="/"
             className="text-2xl font-bold text-white bg-blue-500 px-2 p-1 hover:bg-blue-600"
           >
-            try v0.2.1 now
+            try v0.2.2 now
           </a>
           <UpvotePanel />
         </section>

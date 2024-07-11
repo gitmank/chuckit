@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AuthPanel() {
   return (
-    <div className="flex flex-col gap-4 items-center justify-center py-8 border-l-2 p-4">
+    <div className="flex flex-col gap-4 items-center justify-center py-8 md:border-l-2 p-4">
       <div className="grid gap-2 text-center">
         <h1 className="text-3xl font-bold">free account</h1>
       </div>
