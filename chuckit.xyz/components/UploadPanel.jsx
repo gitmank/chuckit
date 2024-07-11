@@ -222,21 +222,28 @@ export default function UploadPanel() {
     const input = document.getElementById("file-input");
     input.click();
   };
-  const clear = () => {
+  const handleClear = () => {
     setInputFile(null);
     setFileLink(null);
     setEncResult({});
+    setStatus(STATUS.READY);
   };
   const handleDrop = (e) => {
     e.preventDefault();
     setDragging(false);
     if (status === STATUS.LOADING) return;
+    setInputFile(null);
     let files = e.dataTransfer?.files || e.target?.files;
-    if (!files || files.length !== 1 || files[0].size > UPLOAD_LIMIT) {
+    if (
+      !files ||
+      files.length !== 1 ||
+      !files[0].size ||
+      files[0].size > UPLOAD_LIMIT
+    ) {
       setStatus(STATUS.FILE_ERROR);
       return;
     }
-    clear();
+    handleClear();
     setInputFile(files[0]);
     setStatus(STATUS.LOADING);
   };
@@ -250,7 +257,7 @@ export default function UploadPanel() {
       setStatus(STATUS.FILE_ERROR);
       return;
     }
-    clear();
+    handleClear();
     setInputFile(e.target.files[0]);
     setStatus(STATUS.LOADING);
   };
@@ -274,7 +281,12 @@ export default function UploadPanel() {
         </p>
       </div>
       {inputFile ? (
-        <FileCard file={inputFile} status={status} fileLink={fileLink} />
+        <FileCard
+          file={inputFile}
+          status={status}
+          fileLink={fileLink}
+          handleClear={handleClear}
+        />
       ) : (
         <UploadCard
           handleInputChange={handleInputChange}
@@ -293,14 +305,22 @@ export default function UploadPanel() {
 }
 
 // page sepcific components
-const FileCard = ({ file, status, fileLink }) => {
+const FileCard = ({ file, status, fileLink, handleClear }) => {
   return (
     <Card className="w-full min-h-[300px] max-w-lg flex flex-col justify-center gap-8 items-center border-white duration-1000">
       <div className="flex flex-col gap-4 justify-center items-center w-full h-max p-1">
         <p className="text-center text-base">
           {file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}
         </p>
-        <p className="text-4xl">{FILE_ICONS[file?.type] || "📁"}</p>
+        <div className="flex flex-col relative gap-2 text-center justify-center items-center w-max h-max border-white border-2 p-3 rounded-md">
+          <button
+            onClick={handleClear}
+            className="flex w-6 h-6 justify-center items-center rounded-full pb-1 bg-white text-red-400 absolute -top-3 -right-3 hover:bg-red-400 hover:text-white duration-100"
+          >
+            x
+          </button>
+          <p className="text-4xl">{FILE_ICONS[file?.type] || "📁"}</p>
+        </div>
         <p>
           {file.size > 1000000
             ? `${(file.size / 1000000).toFixed(2)} MB`
@@ -404,15 +424,13 @@ const SecurityPopUp = () => {
         🔐 Client-side encryptions
       </p>
       <p>
-        We generate an encryption key in the browser, which is available only in
-        the copied link. When files are accessed, they are decrypted in the
-        browser, and the key is never sent to us or stored with us.
+        We encrypt and decrypt your files in the browser, and the key is never
+        sent to our servers or stored with us.
       </p>
       <p className="text-yellow-500 text-base font-bold mt-4">⚠️ Caution</p>
       <p>
-        This method ensures that we can never access your file, but the key is
-        stored in the link you will be copying, and anyone with the link will be
-        able to access the file.
+        The link is the only way to access your file, make sure to keep it safe
+        and share it only with the intended recipient.
       </p>
     </PopUp>
   );
