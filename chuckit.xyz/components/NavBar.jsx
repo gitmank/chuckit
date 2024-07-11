@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function NavBar() {
   return (
-    <header className="sticky top-0 flex h-16 items-center w-full justify-between gap-4 border-b px-4 md:px-6 bg-background">
+    <header className="fixed z-10 top-0 flex h-16 items-center w-full justify-between gap-4 border-b px-4 md:px-6 bg-background">
       <Link
         href="/"
         className="flex items-center gap-2 text-lg font-semibold md:text-xl text-blue-400"

@@ -6,6 +6,8 @@ import { db } from "@/utilities/connectToFirestore";
 const UPLOAD_LIMIT = 20 * 1024 * 1024; // 20MB
 const words = ["desk", "bike", "cast", "rays", "cool", "blue", "sand", "oats", "wave", "hook", "ball", "taps", "road", "fish", "chip", "rust", "pool", "lake", "boat", "ship"]
 const DEFAULT_QUOTA = 10;
+const URL_EXPIRY = 2 * 60 * 1000; // 2 minutes
+const DOWNLOAD_LIMIT = 50;
 
 export async function POST(req, res) {
     try {
@@ -29,7 +31,7 @@ export async function POST(req, res) {
         const [uploadURL] = await fileObject.getSignedUrl({
             version: "v4",
             action: "write",
-            expires: Date.now() + 1 * 60 * 1000, // 1 minute
+            expires: URL_EXPIRY,
             contentType: 'application/octet-stream',
             extensionHeaders: {
                 "x-upload-content-length": size,
@@ -71,7 +73,7 @@ export async function POST(req, res) {
             code: fileCode,
             ip: ip,
             timestamp: new Date(),
-            downloads: 50,
+            downloads: DOWNLOAD_LIMIT,
             passcode: "",
         });
 

@@ -6,6 +6,7 @@ const TOKEN_EXPIRY = 10 * 60 * 1000; // 10 minutes
 
 export async function POST(req, res) {
     try {
+        return NextResponse.json({ error: "not implemented" }, { status: 501 });
         // validate email
         const { email } = await req.json();
         const emailRef = await db.collection("users").where("email", "==", email).get();

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { bucket } from "@/utilities/connectToGCS";
 import { db } from "@/utilities/connectToFirestore";
 
+const URL_EXPIRY = 2 * 60 * 1000; // 2 minutes
+
 export async function GET(req, res) {
     try {
         // get file name from request
@@ -28,7 +30,7 @@ export async function GET(req, res) {
         const fileObject = bucket.file(`${metadata.name}`);
         const [downloadURL] = await fileObject.getSignedUrl({
             action: "read",
-            expires: Date.now() + 10 * 60 * 1000, // 10 minutes
+            expires: URL_EXPIRY,
         });
 
         return NextResponse.json({ downloadURL, metadata });

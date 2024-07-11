@@ -8,6 +8,7 @@ const TOKEN_EXPIRY = 10 * 60 * 1000; // 10 minutes
 
 export async function POST(req, res) {
     try {
+        return NextResponse.json({ error: "not implemented" }, { status: 501 });
         // validate request data
         const { username, email } = await req.json();
         const fieldsValid = await validateFields(username, email);

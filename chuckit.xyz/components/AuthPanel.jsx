@@ -14,7 +14,7 @@ export default function AuthPanel() {
       <p className="text-balance text-foreground text-center">
         we don't want your identity, 100% anonymous
       </p>
-      <Tabs defaultValue="signup" className="w-full max-w-sm">
+      {/* <Tabs defaultValue="signup" className="w-full max-w-sm">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="signup">signup</TabsTrigger>
           <TabsTrigger value="login">login</TabsTrigger>
@@ -25,42 +25,48 @@ export default function AuthPanel() {
         <TabsContent value="login">
           <LoginForm />
         </TabsContent>
-      </Tabs>
+      </Tabs> */}
       <div className="mt-4 text-center text-base">
         <p className="text-balance text-foreground bg-green-500 mb-4 px-1 text-sm md:text-base">
           4x limits, custom links, 100% secure
         </p>
-        <PopUp
-          openButtonText={"💙 so much more"}
-          title={"1M expiry, 80MB limit, 100 downloads 💚"}
-          closeButtonText={"Let's do it!"}
-        >
-          <div className="flex flex-col w-full h-full gap-4 py-2">
-            <div>
-              <p className="text-blue-400 text-base font-bold text-left">
-                🔗 Shortlinks (coming soon)
-              </p>
-              <p className="text-left">
-                own 5 memorable custom links, assign them to any file
-              </p>
-            </div>
-            <div>
-              <p className="text-blue-400 text-base font-bold text-left">
-                👥 Private Share (coming soon)
-              </p>
-              <p className="text-left">
-                reserve a nickname, share files with specific users
-              </p>
-            </div>
-            <div>
-              <p className="text-blue-400 text-base font-bold text-left">
-                🛜 Nearby Share (coming soon)
-              </p>
-              <p className="text-left">directly drop a file to nearby users</p>
-            </div>
-          </div>
-        </PopUp>
+        <ExtrasPopUp />
       </div>
     </div>
   );
 }
+
+const ExtrasPopUp = () => {
+  return (
+    <PopUp
+      openButtonText={"💙 see what's coming"}
+      title={"1M expiry, 80MB limit, 100 downloads 💚"}
+      closeButtonText={"Let's do it!"}
+    >
+      <div className="flex flex-col w-full h-full gap-4 py-2">
+        <div>
+          <p className="text-blue-400 text-base font-bold text-left">
+            🔗 Shortlinks (coming soon)
+          </p>
+          <p className="text-left">
+            own 5 memorable custom links, assign them to any file
+          </p>
+        </div>
+        <div>
+          <p className="text-blue-400 text-base font-bold text-left">
+            🔐 Access Control (coming soon)
+          </p>
+          <p className="text-left">
+            share files with specific users and track access
+          </p>
+        </div>
+        <div>
+          <p className="text-blue-400 text-base font-bold text-left">
+            🛜 Nearby Share (coming soon)
+          </p>
+          <p className="text-left">directly drop a file to nearby users</p>
+        </div>
+      </div>
+    </PopUp>
+  );
+};
