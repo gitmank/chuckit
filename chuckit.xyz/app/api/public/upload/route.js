@@ -31,7 +31,7 @@ export async function POST(req, res) {
         const [uploadURL] = await fileObject.getSignedUrl({
             version: "v4",
             action: "write",
-            expires: URL_EXPIRY,
+            expires: new Date().getTime() + URL_EXPIRY,
             contentType: 'application/octet-stream',
             extensionHeaders: {
                 "x-upload-content-length": size,

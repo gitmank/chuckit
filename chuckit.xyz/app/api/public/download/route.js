@@ -30,7 +30,7 @@ export async function GET(req, res) {
         const fileObject = bucket.file(`${metadata.name}`);
         const [downloadURL] = await fileObject.getSignedUrl({
             action: "read",
-            expires: URL_EXPIRY,
+            expires: new Date().getTime() + URL_EXPIRY,
         });
 
         return NextResponse.json({ downloadURL, metadata });
