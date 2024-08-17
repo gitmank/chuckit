@@ -19,8 +19,8 @@ export default function AboutPage() {
                     <UpvotePanel />
                 </section>
                 <section className="flex flex-row items-center text-base text-gray-400 mx-auto">
-                    {/* <p>idea by&nbsp;mank</p>
-                    <a
+                    <p>idea by&nbsp;mank</p>
+                    {/* <a
                         target="_blank"
                         className="underline"
                         href="https://manomay.co"
