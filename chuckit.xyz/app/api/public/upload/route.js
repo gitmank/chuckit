@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import { db } from "@/utilities/connectToFirestore";
 
-const UPLOAD_LIMIT = 20 * 1024 * 1024; // 20MB
+const UPLOAD_LIMIT = 900 * 1024 * 1024; // 900MB
 const words = ["desk", "bike", "cast", "rays", "cool", "blue", "sand", "oats", "wave", "hook", "ball", "taps", "road", "fish", "chip", "rust", "pool", "lake", "boat", "ship"]
 const DEFAULT_QUOTA = 10;
 const URL_EXPIRY = 2 * 60 * 1000; // 2 minutes
