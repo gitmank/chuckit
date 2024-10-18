@@ -12,7 +12,7 @@ import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import PopUp from "@/components/small/PopUp";
 
 // constants
-const UPLOAD_LIMIT = 20 * 1024 * 1024;
+const UPLOAD_LIMIT = 900 * 1024 * 1024; // 900MB
 const FILE_ICONS = {
   // image
   "image/jpeg": "🖼️",
